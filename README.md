@@ -70,8 +70,9 @@ Para los proyectos que van a funcionar como librerias solo vamos a dejar la sigu
 └── vite.config.ts
 ```
 
-La configuracion de las devDependencies se deben de bajar al `package.json` que nos creo __lerna__, 
-hay que modificar el `package.json` de los proyectos que sean librerias agregando la siguiente seccion:
+La configuracion de las __dependencies__ generales y las __devDependencies__ se deben de bajar al `package.json` 
+que nos creo __lerna__, hay que modificar el `package.json` de los proyectos que sean librerias agregando la 
+siguiente seccion:
 
 ```JSON
 "files": [
@@ -155,5 +156,20 @@ Dentro de proyectos que estan en packages y que seran de tipo libreria hay que m
       "baseUrl": "./"
     },
     "include": ["./src"]
-  }
+}
 ```
+
+Para los otros, su `tsconfig.json` tendria la siguiente configuracion:
+
+```JSON
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+  },
+  "include": ["./src"],
+}
+```
+
+De igual forma para la configuracion de __ESLint__ se debe de colocar el archivo `.eslintrc.cjs` 
+en la raiz del proyecto lerna, y en dado que existan en cada proyecto se deben de eliminar.
