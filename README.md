@@ -96,7 +96,52 @@ siguiente seccion:
 
 lo cual va a indicar como va a ser exportado al momento de compilarlo.
 
+## Storybook Initial Setup
+
+En los proyectos que van a funcionar como librerias de componentes vamos a instalar Storybook.
+Ejecutamos el siguiente comando:
+
+```
+npx storybook@latest init
+```
+
+Nos va a generar el folder `.storybook` con los archivos de configuracion y la carpeta `stories` en
+`src`, la cual vamos a eliminar por que vamos a compilar nuestros propios componentes.
+
+Posteriormente vamos a ejecutar el siguiente comando, para poder compilar con Vite los componentes:
+
+```
+npx sb init --builder @storybook/builder-vite
+```
+
+Se deben de mover todas las dependencias que se hayan agregado al `package.json` global. Podemos
+ejecutando simplemente con el comando `yarn storybook`.
+
+La primera vez que vamos a habitar `storybook` en el proyecto general, debemos de ejecutar el comando:
+
+```
+npx storybook@latest init
+```
+
+En la raiz del proyecto y vamos a modificar el archivo `.torybook\main.ts` con lo siguiente:
+
+```TS
+stories: [
+  "../packages/*/src/**/*..mdx",
+  "../packages/*/src/**/*.stories.@(js|jsx|ts|tsx)"
+],
+```
+
+Y vamos a remover del `package.json` global los scripts:
+
+```JSON
+"storybook": "storybook dev -p 6006",
+"build-storybook": "storybook build"
+```
+
 ## Global Setup
+
+### Common Vite
 
 Se debe de agregar un archivo `vite.config.ts` en la raiz del proyecto lerna. Y se debe de instalar
 el paquete **vite-plugin-dts** quedando de la siguiente forma:
@@ -179,6 +224,40 @@ Para los otros, su `tsconfig.json` tendria la siguiente configuracion:
 
 De igual forma para la configuracion de **ESLint** se debe de colocar el archivo `.eslintrc.cjs`
 en la raiz del proyecto lerna, y en dado que existan en cada proyecto se deben de eliminar.
+
+### Common Storybook
+
+Para cada proyecto de tipo libreria de componentes vamos a ejecutar los archivos dentro de
+`.storybook`.
+
+Para `main.ts` quedaria de la siguiente manera:
+
+```TS
+import commonConfigs from "../../../.storybook/main";
+
+const config = {
+  ...commonConfigs,
+  stories: ["../src/**/*..mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
+};
+
+export default config;
+```
+
+Para `preview.ts` quedaria de la siguiente manera:
+
+```TS
+import preview from "../../../.storybook/preview";
+
+export default preview;
+```
+
+Por ultimo agregamos el archivo `preview-head.html`.
+
+```HTML
+<script>
+  window.global = window;
+</script>
+```
 
 ## Componentes TypeScript para uso general
 
