@@ -5,7 +5,7 @@
 El Primer paso es configurar el proyecto de lerna, crear el folder del
 proyecto y dentro del folder correr el siguiente comando:
 
-```
+```BASH
 npx lerna init
 ```
 
@@ -32,7 +32,7 @@ y otro para poder utilizarlo.
 
 Ejecutamos el siguiente comando:
 
-```
+```BASH
 npx create-vite pt-common --template react-ts
 ```
 
@@ -101,7 +101,7 @@ lo cual va a indicar como va a ser exportado al momento de compilarlo.
 En los proyectos que van a funcionar como librerias de componentes vamos a instalar Storybook.
 Ejecutamos el siguiente comando:
 
-```
+```BASH
 npx storybook@latest init
 ```
 
@@ -110,7 +110,7 @@ Nos va a generar el folder `.storybook` con los archivos de configuracion y la c
 
 Posteriormente vamos a ejecutar el siguiente comando, para poder compilar con Vite los componentes:
 
-```
+```BASH
 npx sb init --builder @storybook/builder-vite
 ```
 
@@ -119,7 +119,7 @@ ejecutando simplemente con el comando `yarn storybook`.
 
 La primera vez que vamos a habitar `storybook` en el proyecto general, debemos de ejecutar el comando:
 
-```
+```BASH
 npx storybook@latest init
 ```
 
@@ -264,7 +264,7 @@ Por ultimo agregamos el archivo `preview-head.html`.
 Para poder agregar componentes o librerias para uso general nos posicionamos nuevamente en la
 `packages` y creamos una nuevo proyecto con el siguiente comando:
 
-```
+```BASH
 npx create-vite pt-common-js --template vanilla-ts
 ```
 
@@ -273,3 +273,107 @@ la [configuracion](#packageConfigLib) en el archivo `package.json` y la [configu
 
 De igual forma hay que eliminar los archivos que se han configurado de forma global como el `.gitignore`
 y los archivos no necesarios como `index.html` o lo que esta en al carpeta `public`.
+
+## Mock Api
+
+Se va a utilizar mswjs para poder probar nuestro front sin necesidad del backend. Lo primero es instalar como
+devDependencies `msw`, lo hacemos en el `package.json` global.
+
+Una vez instalado el paquete ejecutamos proseguimos a configurar el worker de msw en la raiz de cada proyecto
+del tipo demo, ejecutando el siguiente comando:
+
+```BASH
+npx msw init public
+```
+
+Lo siguiente seria configurar el mock service, crearemos una nueva carpeta llamada `mocks`, y dentro de esta dos carpetas mas
+`data` donde estaran las respustas mockeadas y `handlers` donde se configurara los request intercepatados.
+
+Vamos a agregar los siguientes archivos:
+
+1. `./mocks/browser.ts` el cual tendra la configuracion general del mock service.
+
+```TS
+import { setupWorker } from "msw/browser";
+import { handlers } from "./handlers/index.ts";
+
+export const worker = setupWorker(...handlers);
+```
+
+2. `./handlers/index.ts` el cual tendra el exportado de todos los servicios a mockear
+
+```TS
+import { service1 } from "./service1.ts";
+import { service2 } from "./service2.ts";
+
+export const handlers = [...service1, ...service2];
+```
+
+3. `./handlers/serviceXX.ts` es la definicion del servicio a mockear [Documentacion](https://mswjs.io/docs/basics/intercepting-requests)
+
+```TS
+import { http, HttpResponse } from "msw";
+import { jsonActivities } from "../data/activities.ts";
+
+export const service1 = [
+   http.get("https://activity.com.mx/v2/rates", () => {
+      return HttpResponse.json(jsonActivities);
+   }),
+];
+```
+
+4. `./data/XXX.ts` seria los datos que van a regresar los servicios mockeados.
+
+```TS
+export const jsonActivities = [
+   {
+      id: 1,
+      uri: "uri-ejemplo",
+      name: "Catamarán a Isla Mujeres con barra libre y snorkel",
+   },
+];
+```
+
+Al final vamos a tener una estructura similar:
+
+```
+├── .storybook
+├── mocks
+│   ├── data
+│   │   └── data1.ts
+│   ├── handlers
+│   │   ├── service1.ts
+│   │   └── index.ts
+│   └── browser.ts
+├── packages
+├── .eslintrc.cjs
+├── .gitignore
+├── lerna.json
+├── package.json
+├── tsconfig.build.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+```
+
+Por ultimo para configurar nuestra aplicacion para ocupar el mock tenemos que modificar el archivo
+`main.tsx` de nuestro proyecto.
+
+```TS
+async function deferRender() {
+  if (import.meta.env.VITE_USE_MOCKS !== "true") {
+    return;
+  }
+
+  const { worker } = await import("./mocks/browser.ts");
+  return worker.start();
+}
+
+deferRender().then(() => {
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+});
+```

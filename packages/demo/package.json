@@ -1,17 +1,22 @@
 {
-  "name": "demo",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@pt/common": "*",
-    "@pt/common-js": "*"
-  },
-  "devDependencies": {}
+   "name": "demo",
+   "private": true,
+   "version": "0.0.0",
+   "type": "module",
+   "scripts": {
+      "dev": "vite",
+      "build": "tsc && vite build",
+      "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+      "preview": "vite preview"
+   },
+   "dependencies": {
+      "@pt/common": "*",
+      "@pt/common-js": "*"
+   },
+   "devDependencies": {},
+   "msw": {
+      "workerDirectory": [
+         "public"
+      ]
+   }
 }
