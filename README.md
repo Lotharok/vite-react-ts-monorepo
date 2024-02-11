@@ -65,9 +65,9 @@ Para los proyectos que van a funcionar como librerias solo vamos a dejar la sigu
 ```
 ├── package.json
 ├── src
-    ├── components
-    │   └── index.tsx
-    ├── index.tsx
+│   ├── components
+│   │   └── index.tsx
+│   ├── index.tsx
 │   └── vite-env.d.ts
 ├── tsconfig.json
 └── vite.config.ts
@@ -376,4 +376,85 @@ deferRender().then(() => {
     </React.StrictMode>
   );
 });
+```
+
+## Internationalization con i18next
+
+Para manejar diferentes idiomas de nuestra aplicacion vamos a utilizar [react-i18next](https://react.i18next.com/).
+Vamos a instalar lo siguiente;
+
+```BASH
+yarn add react-i18next
+yarn add i18next
+yarn add i18next-http-backend
+```
+
+Una vez instalado esto, creamos el archivo `i18n.js` junto a nuestro `main.tsx` minimo con el siguiente contenido:
+
+```JS
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import Backend from "i18next-http-backend";
+
+const options = {
+   debug: true,
+   fallbackLng: "es-mx",
+   load: "currentOnly",
+   interpolation: {
+      escapeValue: false, // not needed for react as it escapes by default
+   },
+   backend: {
+      loadPath: (lng, ns) => {
+         return `/locales/${lng}/${ns}.json`;
+         //return ` https://your.cloudfront.net/i18n/addons/${lng}/${ns}.json`;
+      },
+      crossDomain: true,
+   },
+};
+
+i18n.use(Backend).use(initReactI18next).init(options);
+
+export default i18n;
+```
+
+La configuracion de `backend` nos permite tener los archivos locales o bien en algun cdn publico,
+para desarrollo, es conveniente manejarlos locales y una vez que se sube a produccion manejarlos desde una cdn.
+
+Los archivos para configurar las traducciones son de tipo `JSON` y debe de quedar en una estructura de carpetas
+como la siguiente:
+
+```
+└── public
+    └── locales
+        ├── es-MX
+        │   └── translation.json
+        ├── es-CO
+        │   └── translation.json
+        └── en-US
+            └── translation.json
+```
+
+Para poder empezar a utilizar el servicio hay que importar el archivo `i18n.js` en nuestro `main.tsx` de la
+siguiente forma:
+
+```TS
+import "./i18n.js";
+```
+
+Por ultimo para ya utilizarlo en nuestros componentes quedaria de la siguiente manera:
+
+```TSX
+...
+import { useTranslation } from "react-i18next";
+...
+
+function App() {
+  const { t } = useTranslation();
+  ...
+  <button ref={myContainer} type="button">{t("home.label_librery")}</button>
+  ...
+}
+
+export default App;
+
 ```

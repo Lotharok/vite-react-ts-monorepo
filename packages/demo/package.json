@@ -11,7 +11,10 @@
    },
    "dependencies": {
       "@pt/common": "*",
-      "@pt/common-js": "*"
+      "@pt/common-js": "*",
+      "i18next": "^23.8.2",
+      "i18next-http-backend": "^2.4.3",
+      "react-i18next": "^14.0.5"
    },
    "devDependencies": {},
    "msw": {
